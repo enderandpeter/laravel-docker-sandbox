@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+    httpd:
+        build: ./httpd
+        image: ${COMPOSE_PROJECT_NAME}/${CONTAINER_NS}_httpd
+        container_name: ${CONTAINER_NS}_httpd
+        volumes:
+            - "${PHP_VOLUME}:/var/www/html"
+        ports:
+            - "${HOST_HTTP_PORT}:80"
+        depends_on:
+            - "php-fpm"
+        environment:
+            - SERVER_NAME=${SERVER_NAME}
+            - SERVER_ADMIN=${SERVER_ADMIN}
+            - PHP_SERVER=${CONTAINER_NS}_php-fpm
+        networks:
+            - network
+    php-fpm:
+        build: ./php-fpm
+        image: ${COMPOSE_PROJECT_NAME}/${CONTAINER_NS}_php-fpm
+        container_name: ${CONTAINER_NS}_php-fpm
+        environment:
+            - SERVER_NAME=${SERVER_NAME}
+            - SERVER_ADMIN=${SERVER_ADMIN}
+        networks:
+            - network
+        depends_on:
+            - "postgres"
+        volumes:
+            - "${PHP_VOLUME}:/var/www/html"
+        ports:
+            - "${PHP_FPM_PORT}:9000"
+    postgres:
+        build: ./postgres
+        image: ${COMPOSE_PROJECT_NAME}/${CONTAINER_NS}_postgres
+        container_name: ${CONTAINER_NS}_postgres
+        networks:
+            - network
+networks:
+  network:
